@@ -4,9 +4,12 @@ import com.jfoenix.controls.JFXButton;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.event.ActionEvent;
+import javafx.stage.Stage;
 
 
 import java.io.IOException;
@@ -50,10 +53,11 @@ public class BaseController implements Initializable {
     private JFXButton temp = null;
     private JFXButton recover = null;
     private static boolean anchorFlag = false;
+
     /**
-     * FXML_URL will be used to store locations of
-     * main.resources.view files and it will be used to navigate
-     * between different menus
+     * FXML_URL sẽ được sử dụng để lưu vị trí của
+     * main.resources.view files và nó sẽ được sử dụng cho navigate
+     * giữa các menu
      */
     private HashMap<String, String> FXML_URL = new HashMap<>();
 
@@ -75,6 +79,8 @@ public class BaseController implements Initializable {
 //
 //    }
 
+
+    // Khởi tạo Base với DashBoard.
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         loadFXMLMap();
@@ -114,9 +120,29 @@ public class BaseController implements Initializable {
     }
 
     private void loadFXMLMap() {
-        FXML_URL.put("dashbroad", "/resource/view/dashboard.fxml");
+        FXML_URL.put("dashboard", "/resource/view/dashboard.fxml");
+
     }
 
+
+
+    @FXML
+    public void logOut(){
+        Stage current = (Stage) lblUsername.getScene().getWindow();
+        current.close();
+
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/resource/view/login.fxml"));
+            root.getStylesheets().add("/resource/css/login.css");
+            Scene scene = new Scene(root);
+            Stage loginPrompt = new Stage();
+            loginPrompt.setScene(scene);
+            loginPrompt.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
     //
     public void bolderSelector(ActionEvent event) {
         JFXButton btn = (JFXButton) event.getSource();
@@ -136,6 +162,8 @@ public class BaseController implements Initializable {
         JFXButton btn = (JFXButton) event.getSource();
         String btnText = btn.getText();
     }
+
+
 
 
 }

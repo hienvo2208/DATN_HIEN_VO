@@ -62,8 +62,9 @@ public class InitializerController implements Initializable {
 
     }
 
+    // Khởi tạo base
     private void loadApplication(){
-        //Creating a new stage for main application
+        //Tạo một cái new stage cho Application (tạo base)
         Parent root = null;
         Stage base = new Stage();
 
