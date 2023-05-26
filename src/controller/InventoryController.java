@@ -5,6 +5,8 @@ import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextField;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import entites.DBConnection;
+import entites.Item;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -13,11 +15,22 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Tooltip;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
-import main.java.others.Item;
+import javafx.stage.FileChooser;
+import org.controlsfx.control.textfield.TextFields;
 
+import java.io.File;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
@@ -58,30 +71,30 @@ public class InventoryController implements Initializable {
     @FXML
     private AnchorPane itemListPane;
     @FXML
-    private TableView<main.java.others.Item> tbl;
+    private TableView<entites.Item> tbl;
     @FXML
-    private TableColumn<main.java.others.Item, Integer> columnItemID;
+    private TableColumn<entites.Item, Integer> columnItemID;
     @FXML
-    private TableColumn<main.java.others.Item, String> columnItemName;
+    private TableColumn<entites.Item, String> columnItemName;
     @FXML
-    private TableColumn<main.java.others.Item, String> columnItemType;
+    private TableColumn<entites.Item, String> columnItemType;
     @FXML
-    private TableColumn<main.java.others.Item, Boolean> columnForRent;
+    private TableColumn<entites.Item, Boolean> columnForRent;
     @FXML
-    private TableColumn<main.java.others.Item, Boolean> columnForSale;
+    private TableColumn<entites.Item, Boolean> columnForSale;
     @FXML
-    private TableColumn<main.java.others.Item, Double> columnRentalRate;
+    private TableColumn<entites.Item, Double> columnRentalRate;
     @FXML
-    private TableColumn<main.java.others.Item, Double> columnPrice;
+    private TableColumn<entites.Item, Double> columnPrice;
     @FXML
-    private TableColumn<main.java.others.Item, Integer> columnStock;
+    private TableColumn<entites.Item, Integer> columnStock;
     @FXML
     private JFXCheckBox chkRent, chkSale;
     @FXML
     private FontAwesomeIconView btnSearchIcon;
     private static int recordIndex = 0;
     private static int recordSize = 0;
-    private main.java.others.Item onView = null;
+    private Item onView = null;
     /**
      * addFlag will differentiate b/w Adding a new entry
      * and updating an existing entry.
@@ -92,18 +105,209 @@ public class InventoryController implements Initializable {
     private static boolean searchDone = false;
     private static String imgPath = null;
     public static TreeMap<String, Integer> itemType = new TreeMap<>();
-    public static ObservableList<main.java.others.Item> itemList = FXCollections.observableArrayList(); //This field will auto set from InitializerController Class
-    public static ObservableList<Item> tempList = FXCollections.observableArrayList(); //Will hold the main list while searching
+    public static ObservableList<entites.Item> itemList = FXCollections.observableArrayList(); //This field will auto set from InitializerController Class
+    public static ObservableList<entites.Item> tempList = FXCollections.observableArrayList(); //Will hold the main list while searching
     public static ArrayList<String> itemNames = new ArrayList<>();
     public static ObservableList<String> itemTypeNames = FXCollections.observableArrayList();
 
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        if (LoginController.loggerAccessLevel.equals("Admin")) {
+            btnDelete.setDisable(false);
+        }
+        txtType.setItems(itemTypeNames);
+        TextFields.bindAutoCompletion(txtSearch, itemNames);
+        setView();
+
+
+    }
+
+    private void setView() {
+        itemListPane.setVisible(false);
+        recordIndex = 0; //Resetting index value
+        recordSize = itemList.size();
+
+        //Tooltip sẽ được kích hoạt trên ảnh của khách hàng nếu như di chuột đến.
+        Tooltip tooltip = new Tooltip("Click chuột hai lần để thay đổi Avatar");
+        Tooltip.install(imgCustomerPhoto, tooltip);
+
+        imgCustomerPhoto.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                FileChooser fc = new FileChooser();
+                fc.setTitle("Choose photos");
+
+                File imgFile = (File) fc.showOpenMultipleDialog(imgCustomerPhoto.getScene().getWindow());
+
+                if (imgFile != null) {
+                    imgPath = imgFile.toURI().getPath();
+                    if (imgPath.contains(".jpg") || imgPath.contains(".png") || imgPath.contains(".jpeg")) {
+                        ImagePattern gg = new ImagePattern(new Image(imgPath));
+                        imgCustomerPhoto.setFill(gg);
+                    } else {
+                        new PromptDialogController("File format Error !", "Please select a valid image file. You can select JPG, JPEG, PNG, GIF");
+                    }
+                }
+            }
+        });
+
+        btnNextEntry.setOnAction(event -> {
+            onView = itemList.get(++recordIndex);
+            recordNavigator();
+            lblPageIndex.setText("Trang " + (recordIndex + 1) + " của " + recordSize + ".");
+            if (recordIndex + 1 == recordSize) {
+                btnNextEntry.setDisable(true);
+            }
+            btnPrevEntry.setDisable(false);
+        });
+
+
+        btnPrevEntry.setOnAction(event -> {
+            onView = itemList.get(--recordIndex);
+            recordNavigator();
+            lblPageIndex.setText("Trang " + (recordIndex + 1) + " của " + recordSize + ".");
+            if (recordIndex == 0) {
+                btnPrevEntry.setDisable(true);
+            }
+            btnNextEntry.setDisable(false);
+
+        });
+        btnNextEntry.setDisable(false);
+
+        if (recordSize > 0) {
+            onView = itemList.get(recordIndex); // Gia tri hien tai cua ban ghi
+            recordNavigator();
+
+            lblPageIndex.setText("Trang " + (recordIndex + 1) + "của" + recordSize + ".");
+
+            if (recordSize > 1) {
+                btnNextEntry.setDisable(false);
+            }
+
+        }
+        btnPrevEntry.setDisable(true);
+
+    }
+
+    private void recordNavigator() {
+        txtStock.setStyle("-fx-text-fill: #263238");
+
+        chkRent.setSelected(false);
+        chkSale.setSelected(false);
+        txtRentRate.setText("0.0");
+        txtPrice.setText("0.0");
+
+        itemID.setText(Integer.toString(onView.getId()));
+        txtItemName.setText(onView.getName());
+        txtType.setValue(onView.getItemType());
+        if (onView.isRent()) {
+            chkRent.setSelected(true);
+            txtRentRate.setText(Double.toString(onView.getRentRate()));
+        }
+        if (onView.isSale()) {
+            chkSale.setSelected(true);
+            txtPrice.setText(Double.toString(onView.getSalePrice()));
+        }
+        txtStock.setText(Integer.toString(onView.getStock()));
+
+        // Set mau do neu stock < 5
+        if (onView.getStock() <= 5) {
+            txtStock.setStyle("-fx-text-fill: red");
+        }
+
+        //Load anh
+        if (onView.getPhoto() == null) {
+            ImagePattern img = new ImagePattern(new Image("/resource/icon/trolley.png"));
+            imgCustomerPhoto.setFill(img);
+        } else {
+            try {
+                imgPath = onView.getPhoto();
+
+                File tmpPath = new File(imgPath.replace("file:", ""));
+
+                if (tmpPath.exists()) {
+                    ImagePattern img = new ImagePattern(new Image(imgPath));
+                    imgCustomerPhoto.setFill(img);
+                } else {
+                    imgPath = null;
+                    ImagePattern img = new ImagePattern(new Image("/resource/icon/trolley.png"));
+                    imgCustomerPhoto.setFill(img);
+                }
+
+            } catch (Exception e) {
+                //Fallback photo in case image not found
+                ImagePattern img = new ImagePattern(new Image("/resource/icon/trolley.png"));
+                imgCustomerPhoto.setFill(img);
+            }
+        }
+
+    }
+
     @FXML
     public void listAllItems(ActionEvent event) {
+       btnGoBack.setOnAction(e->{
+           itemListPane.setVisible(false);
+           itemPane.setVisible(true);
+       });
+       tbl.setItems(itemList);
+       listView();
     }
+
+    private void listView() {
+        itemPane.setVisible(false);
+        itemListPane.setVisible(true);
+
+        columnItemID.setCellValueFactory(new PropertyValueFactory<>("id"));
+        columnItemName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        columnStock.setCellValueFactory(new PropertyValueFactory<>("stock"));
+        columnItemType.setCellValueFactory(new PropertyValueFactory<>("itemType"));
+        columnForRent.setCellValueFactory(new PropertyValueFactory<>("rent"));
+        columnForSale.setCellValueFactory(new PropertyValueFactory<>("sale"));
+        columnRentalRate.setCellValueFactory(new PropertyValueFactory<>("rentRate"));
+        columnPrice.setCellValueFactory(new PropertyValueFactory<>("salePrice"));
+
+    }
+
 
 
     @FXML
     public void outOfStockList(ActionEvent event) {
+        btnGoBack.setOnAction(e -> {
+            itemListPane.setVisible(false);
+            itemPane.setVisible(true);
+        });
+
+        Connection connection = DBConnection.getConnection();
+        ObservableList<Item> outStock = FXCollections.observableArrayList();
+        try {
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM item INNER JOIN itemtype ON item.ItemType_itemTypeId = itemtype.itemTypeId WHERE stock <= 5");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Item item = new Item(rs.getInt("itemId"),
+                        rs.getString("itemName"),
+                        rs.getInt("stock"),
+                        false,
+                        false,
+                        rs.getDouble("salePrice"),
+                        rs.getDouble("rentRate"),
+                        rs.getString("photo"),
+                        rs.getString("typeName"));
+                if (rs.getString("rentalOrSale").contains("Rental")) {
+                    item.setRent(true);
+                } else if (rs.getString("rentalOrSale").contains("Sale")) {
+                    item.setSale(true);
+                }
+                outStock.add(item);
+            }
+
+            tbl.setItems(outStock);
+            listView();
+            connection.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -113,18 +317,107 @@ public class InventoryController implements Initializable {
 
     @FXML
     public void btnAddMode(ActionEvent event) {
+        if(addFlag){
+            // reset addFlag
+
+            addFlag = false;
+            btnAddIcon.setGlyphName("PLUS");
+
+            //enable các nút của itempane
+            btnPrevEntry.setDisable(false);
+            btnNextEntry.setDisable(false);
+            btnOutOfStock.setDisable(false);
+            btnListAll.setDisable(false);
+            btnDelete.setDisable(false);
+            btnSearch.setDisable(false);
+
+
+            String defColor = "#263238";
+
+            //Changing Focus Color
+            txtItemName.setUnFocusColor(Color.web(defColor));
+            txtPrice.setUnFocusColor(Color.web(defColor));
+            txtRentRate.setUnFocusColor(Color.web(defColor));
+            txtType.setUnFocusColor(Color.web(defColor));
+            txtSearch.setUnFocusColor(Color.web(defColor));
+            txtStock.setUnFocusColor(Color.web(defColor));
+
+            // Hiển thị chế độ.
+            lblMode.setText("Item");
+            reloadRecord();
+            
+
+        }else{
+            Connection connection = DBConnection.getConnection();
+            try {
+                PreparedStatement pr = connection.prepareStatement("SELECT MAX(itemID) FROM item ");
+                ResultSet rs = pr.executeQuery();
+                while(rs.next()){
+                    itemID.setText(Integer.valueOf(rs.getInt(1)+1).toString());
+                }
+                addFlag = true;
+                btnAddIcon.setGlyphName("UNDO");
+
+                // Hiển thị chế độ.
+                lblMode.setText("Thêm item mới");
+
+                ImagePattern imgae = new ImagePattern(new Image("/main/resources/icons/trolley.png"));
+                imgCustomerPhoto.setFill(imgae);
+
+                // Vô hiệu hóa những nút bấm của ListPane.
+                btnPrevEntry.setDisable(true);
+                btnNextEntry.setDisable(true);
+                btnOutOfStock.setDisable(true);
+                btnListAll.setDisable(true);
+                btnDelete.setDisable(true);
+                btnSearch.setDisable(true);
+
+
+            } catch (SQLException e) {
+                new PromptDialogController("SQL Error!", "Error occured while executing Query.\nSQL Error Code: " + e.getErrorCode());
+            }
+        }
+    }
+
+    private void reloadRecord() {
+        itemList.clear();
+        Connection connection = DBConnection.getConnection();
+        try {
+            PreparedStatement pr = connection.prepareStatement("SELECT * FROM item INNER JOIN itemtype ON ItemType_itemTypeId = itemtype.itemTypeId GROUP BY itemID");
+            ResultSet rs = pr.executeQuery();
+
+            while(rs.next()){
+                Item item = new Item(rs.getInt("itemId"),
+                        rs.getString("itemName"),
+                        rs.getInt("stock"),
+                        false,
+                        false,
+                        rs.getDouble("salePrice"),
+                        rs.getDouble("rentRate"),
+                        rs.getString("photo"),
+                        rs.getString("typeName"));
+                if (rs.getString("rentalOrSale").contains("Rental")) {
+                    item.setRent(true);
+                } else if (rs.getString("rentalOrSale").contains("Sale")) {
+                    item.setSale(true);
+                }
+                itemList.add(item);
+            }
+
+        } catch (SQLException e) {
+            new PromptDialogController("SQL Error!", "Error occured while executing Query.\nSQL Error Code: " + e.getErrorCode());
+        }
     }
 
     @FXML
     public void btnDelAction(ActionEvent event) {
+
     }
 
     @FXML
     public void btnSaveAction(ActionEvent event) {
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
 
     }
+
+
 }

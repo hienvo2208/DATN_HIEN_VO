@@ -70,15 +70,6 @@ public class BaseController implements Initializable {
         newRightPane.setPrefHeight(paneRight.getHeight());
     }
 
-//    @FXML
-//    public void btnNavigators(ActionEvent event) {
-//        bolderSelector(event);
-//        JFXButton btn = (JFXButton) event.getSource();
-//
-//        String btnText = btn.getText();
-//
-//    }
-
 
     // Khởi tạo Base với DashBoard.
     @Override
@@ -120,7 +111,8 @@ public class BaseController implements Initializable {
     }
 
     private void loadFXMLMap() {
-        FXML_URL.put("dashboard", "/resource/view/dashboard.fxml");
+        FXML_URL.put("Dashboard", "/resource/view/dashboard.fxml");
+        FXML_URL.put("Items", "/resource/view/inventory.fxml");
 
     }
 
@@ -161,6 +153,7 @@ public class BaseController implements Initializable {
         bolderSelector(event);
         JFXButton btn = (JFXButton) event.getSource();
         String btnText = btn.getText();
+        ctrlRightPane(FXML_URL.get(btnText));
     }
 
 

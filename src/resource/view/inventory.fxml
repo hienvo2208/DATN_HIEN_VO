@@ -24,13 +24,13 @@
             <TableView fx:id="tbl" prefHeight="354.0" prefWidth="1067.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
                <columns>
                   <TableColumn fx:id="columnItemID" prefWidth="75.0" text="Item ID" />
-                  <TableColumn fx:id="columnItemName" prefWidth="75.0" text="Name" />
-                  <TableColumn fx:id="columnItemType" prefWidth="75.0" text="Type" />
-                  <TableColumn fx:id="columnForRent" prefWidth="75.0" text="For Rent" />
-                  <TableColumn fx:id="columnForSale" prefWidth="75.0" text="For Sale" />
-                  <TableColumn fx:id="columnRentalRate" prefWidth="75.0" text="Rental Rate/Day" />
-                  <TableColumn fx:id="columnPrice" prefWidth="75.0" text="Price" />
-                  <TableColumn fx:id="columnStock" prefWidth="75.0" text="Available Stock" />
+                  <TableColumn fx:id="columnItemName" prefWidth="75.0" text="Tên" />
+                  <TableColumn fx:id="columnItemType" prefWidth="75.0" text="Loại" />
+                  <TableColumn fx:id="columnForRent" prefWidth="75.0" text="Thuê" />
+                  <TableColumn fx:id="columnForSale" prefWidth="75.0" text="Bán" />
+                  <TableColumn fx:id="columnRentalRate" prefWidth="75.0" text="Giá thuê/Ngày" />
+                  <TableColumn fx:id="columnPrice" prefWidth="75.0" text="Giá bán" />
+                  <TableColumn fx:id="columnStock" prefWidth="75.0" text="Số lượng hàng" />
                </columns>
                <columnResizePolicy>
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -80,7 +80,7 @@
                </font>
             </JFXTextField>
             <JFXComboBox fx:id="txtType" layoutX="392.0" layoutY="222.0" prefHeight="25.0" prefWidth="232.0" style="-fx-text-size: 15px;" />
-            <Label layoutX="301.0" layoutY="268.0" prefHeight="44.0" prefWidth="85.0" text="Rental/Sale:">
+            <Label layoutX="301.0" layoutY="268.0" prefHeight="44.0" prefWidth="85.0" text="Thuê/Bán:">
                <font>
                   <Font name="System Bold" size="14.0" />
                </font>
@@ -112,27 +112,27 @@
                   <Font name="System Bold" size="20.0" />
                </font>
             </Label>
-            <Label layoutX="300.0" layoutY="364.0" prefHeight="44.0" prefWidth="78.0" text="Rent Rate:">
+            <Label layoutX="300.0" layoutY="364.0" prefHeight="44.0" prefWidth="78.0" text="Giá thuê:">
                <font>
                   <Font name="System Bold" size="14.0" />
                </font>
             </Label>
-            <Label layoutX="304.0" layoutY="156.0" prefHeight="44.0" prefWidth="78.0" text="Name:">
+            <Label layoutX="304.0" layoutY="156.0" prefHeight="44.0" prefWidth="78.0" text="Tên:">
                <font>
                   <Font name="System Bold" size="14.0" />
                </font>
             </Label>
-            <Label layoutX="304.0" layoutY="212.0" prefHeight="44.0" prefWidth="78.0" text="Type:">
+            <Label layoutX="304.0" layoutY="212.0" prefHeight="44.0" prefWidth="78.0" text="Loạii:">
                <font>
                   <Font name="System Bold" size="14.0" />
                </font>
             </Label>
-            <Label alignment="CENTER" layoutX="92.0" layoutY="364.0" prefHeight="58.0" prefWidth="106.0" text="On Stock:">
+            <Label alignment="CENTER" layoutX="92.0" layoutY="364.0" prefHeight="58.0" prefWidth="106.0" text="Số lượng:">
                <font>
                   <Font name="System Bold" size="14.0" />
                </font>
             </Label>
-            <Label layoutX="300.0" layoutY="315.0" prefHeight="44.0" prefWidth="78.0" text="Price:">
+            <Label layoutX="300.0" layoutY="315.0" prefHeight="44.0" prefWidth="78.0" text="Giá:">
                <font>
                   <Font name="System Bold" size="14.0" />
                </font>

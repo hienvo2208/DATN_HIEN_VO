@@ -192,52 +192,46 @@ public class InitializerController implements Initializable {
 
 
 //--------------------------------------------------------------------------------------------------
-//            Thread.sleep(THREAD_SLEEP_INTERVAL);
-//            //Updating Task status
-//            this.updateMessage("Loading Items...");
-//
-//
-//            while(itemResultSet.next()) {
-//                Item item = new Item(itemResultSet.getInt("itemID"),
-//                        itemResultSet.getString("itemName"),
-//                        itemResultSet.getInt("stock"),
-//                        false,
-//                        false,
-//                        itemResultSet.getDouble("salePrice"),
-//                        itemResultSet.getDouble("rentRate"),
-//                        itemResultSet.getString("photo"),
-//                        itemResultSet.getString("typeName"));
-//
-//                itemNames.add(itemResultSet.getString("itemName"));
-//
-//                if(itemResultSet.getString("rentalOrSale").contains("Rental"))
-//                {
-//                    item.setRent(true);
-//                    itemIDNameForRentals.add(itemResultSet.getInt("itemID") + " | " +
-//                            itemResultSet.getString("itemName"));
-//                    itemIDForRent.add(itemResultSet.getInt("itemID"));
-//                }
-//                if(itemResultSet.getString("rentalOrSale").contains("Sale")) {
-//                    itemIDNameForSale.add(itemResultSet.getInt("itemID") + " | " + itemResultSet.getString("itemName"));
-//                    itemIDForSale.add(itemResultSet.getInt("itemID"));
-//                    item.setSale(true);
-//                }
-//
-//                itemList.add(item);
-//
-//            }
-//
-//            //Setting Observable Lists to the static field of InventoryController
-//            InventoryController.itemList = itemList;
-//            InventoryController.itemNames = itemNames;
-//            SellsController.inven
-//
-//
-//
-//            Thread.sleep(THREAD_SLEEP_INTERVAL);
-//
+            Thread.sleep(THREAD_SLEEP_INTERVAL);
+            //Updating Task status
+            this.updateMessage("Loading Items...");
 
 
+            while(itemResultSet.next()) {
+                Item item = new Item(itemResultSet.getInt("itemID"),
+                        itemResultSet.getString("itemName"),
+                        itemResultSet.getInt("stock"),
+                        false,
+                        false,
+                        itemResultSet.getDouble("salePrice"),
+                        itemResultSet.getDouble("rentRate"),
+                        itemResultSet.getString("photo"),
+                        itemResultSet.getString("typeName"));
+
+                itemNames.add(itemResultSet.getString("itemName"));
+
+                if(itemResultSet.getString("rentalOrSale").contains("Rental"))
+                {
+                    item.setRent(true);
+                    itemIDNameForRentals.add(itemResultSet.getInt("itemID") + " | " +
+                            itemResultSet.getString("itemName"));
+                    itemIDForRent.add(itemResultSet.getInt("itemID"));
+                }
+                if(itemResultSet.getString("rentalOrSale").contains("Sale")) {
+                    itemIDNameForSale.add(itemResultSet.getInt("itemID") + " | " + itemResultSet.getString("itemName"));
+                    itemIDForSale.add(itemResultSet.getInt("itemID"));
+                    item.setSale(true);
+                }
+
+                itemList.add(item);
+
+            }
+
+
+
+            //Setting Observable Lists to the static field of InventoryController
+            InventoryController.itemList = itemList;
+            Thread.sleep(THREAD_SLEEP_INTERVAL);
 
 
 
