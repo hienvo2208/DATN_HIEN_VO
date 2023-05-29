@@ -500,6 +500,27 @@ public class InventoryController implements Initializable {
 
     @FXML
     public void btnDelAction(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Xác nhận xóa entry");
+        alert.setGraphic(new ImageView(this.getClass().getResource("/resource/icon/question (2).png").toString()));
+
+        alert.setHeaderText("Bạn xóa item này vào không ?");
+        alert.setContentText("Nhấn OK để xác nhận, Cancel để hủy");
+
+        java.util.Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.get() == ButtonType.OK) {
+            Connection connection = repository.DBConnection.getConnection();
+            try {
+                PreparedStatement pr = connection.prepareStatement("DELETE FROM item WHERE itemID =" + Integer.valueOf(itemID.getText()));
+                pr.executeUpdate();
+                new PromptDialogController("Thành công", "Bạn đã xóa thành công item");
+                reloadRecord();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        }
 
     }
 
