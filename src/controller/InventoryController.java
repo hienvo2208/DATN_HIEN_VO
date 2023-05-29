@@ -2,7 +2,6 @@ package controller;
 
 import com.jfoenix.controls.*;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
-import entites.DBConnection;
 import entites.Item;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,6 +18,7 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import org.controlsfx.control.textfield.TextFields;
+import repository.DBConnection;
 
 import java.io.File;
 import java.net.URL;
