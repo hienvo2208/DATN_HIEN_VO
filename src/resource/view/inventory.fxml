@@ -216,7 +216,7 @@
             </JFXButton>
             <Label fx:id="lblMode" layoutX="21.0" layoutY="23.0" prefHeight="51.0" prefWidth="248.0" text="Navigation Mode" textFill="GREEN">
                <font>
-                  <Font size="27.0" />
+                  <Font size="20.0" />
                </font>
             </Label>
             <Label fx:id="lblSearchResults" alignment="CENTER_RIGHT" layoutX="631.0" layoutY="48.0" prefHeight="17.0" prefWidth="154.0" text="Results found!" visible="false" />

@@ -11,11 +11,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-/**
- * Author: Afif Al Mamun
- * Written on: 10-Jul-18
- * Project: TeslaRentalInventory
- **/
+
 public class PromptDialogController {
     /**
      * Constructor will pop up a new stage which will contain
@@ -34,7 +30,7 @@ public class PromptDialogController {
 
         try {
 
-            Parent root = FXMLLoader.load(getClass().getResource("/main/resources/resource.view/dialog.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/resource/view/dialog.fxml"));
             Scene s = new Scene(root);
 
             //Getting useful nodes from FXML to set error report

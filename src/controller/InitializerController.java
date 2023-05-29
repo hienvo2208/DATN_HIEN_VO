@@ -118,7 +118,7 @@ public class InitializerController implements Initializable {
             ResultSet sellsList = getSellsList.executeQuery();
             ResultSet rentList = getRentalList.executeQuery();
             ResultSet accountResultSet = getAccountList.executeQuery();
-            ResultSet itemType = getItemType.executeQuery();
+            ResultSet itemTypeR = getItemType.executeQuery();
             ResultSet stockOut = getOutOfStock.executeQuery();
 
 
@@ -229,8 +229,16 @@ public class InitializerController implements Initializable {
 
 
 
+
+
             //Setting Observable Lists to the static field of InventoryController
             InventoryController.itemList = itemList;
+
+            while(itemTypeR.next()){
+                InventoryController.itemTypeNames.add(itemTypeR.getString(2));
+                InventoryController.itemType.put(itemTypeR.getString(2),itemTypeR.getInt(1));
+            }
+
             Thread.sleep(THREAD_SLEEP_INTERVAL);
 
 

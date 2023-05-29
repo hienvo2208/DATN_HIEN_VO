@@ -1,9 +1,6 @@
 package controller;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXCheckBox;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXTextField;
+import com.jfoenix.controls.*;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import entites.DBConnection;
 import entites.Item;
@@ -12,12 +9,10 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
@@ -32,8 +27,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
+
+import static com.sun.xml.internal.ws.policy.sourcemodel.wspolicy.XmlToken.Optional;
 
 public class InventoryController implements Initializable {
     @FXML
@@ -123,7 +121,9 @@ public class InventoryController implements Initializable {
 
     }
 
+
     private void setView() {
+        lblMode.setText("Chế độ xem ITEMS");
         itemListPane.setVisible(false);
         recordIndex = 0; //Resetting index value
         recordSize = itemList.size();
@@ -245,12 +245,12 @@ public class InventoryController implements Initializable {
 
     @FXML
     public void listAllItems(ActionEvent event) {
-       btnGoBack.setOnAction(e->{
-           itemListPane.setVisible(false);
-           itemPane.setVisible(true);
-       });
-       tbl.setItems(itemList);
-       listView();
+        btnGoBack.setOnAction(e -> {
+            itemListPane.setVisible(false);
+            itemPane.setVisible(true);
+        });
+        tbl.setItems(itemList);
+        listView();
     }
 
     private void listView() {
@@ -267,7 +267,6 @@ public class InventoryController implements Initializable {
         columnPrice.setCellValueFactory(new PropertyValueFactory<>("salePrice"));
 
     }
-
 
 
     @FXML
@@ -313,11 +312,92 @@ public class InventoryController implements Initializable {
 
     @FXML
     public void btnSearchAction(ActionEvent event) {
+
+    }
+
+    private void addRecodeToDatabase() {
+        Connection connection = repository.DBConnection.getConnection();
+        try {
+            PreparedStatement rs = connection.prepareStatement("INSERT INTO item VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
+            rs.setInt(1, Integer.valueOf(itemID.getText()));
+            rs.setString(2, txtItemName.getText());
+            rs.setInt(3, Integer.valueOf(txtStock.getText()));
+
+            if (chkSale.isSelected() && chkRent.isSelected()) {
+                rs.setString(4, "Rental,Sale");
+            } else if (chkSale.isSelected()) {
+                rs.setString(4, "Sale");
+            } else if (chkRent.isSelected()) {
+                rs.setString(4, "Rental");
+            }
+
+            double salePrice = 0.0;
+            double rentRate = 0.0;
+
+            if (!txtPrice.getText().equals("")) {
+                salePrice = Double.valueOf(txtPrice.getText());
+            }
+
+            if (!txtRentRate.getText().equals("")) {
+                rentRate = Double.valueOf(txtRentRate.getText());
+            }
+            rs.setDouble(5, salePrice);
+            rs.setDouble(6, rentRate);
+
+            rs.setString(7, imgPath);
+            rs.setInt(8, itemType.get(txtType.getValue()));
+
+            rs.executeUpdate();
+
+
+            new exception.PromptDialogController("Thành công", "Item được thêm vào thành công");
+            reloadRecord();
+        } catch (SQLException e) {
+            new exception.PromptDialogController("SQL Error!", "Error occured while executing Query.\nSQL Error Code: " + e.getErrorCode());
+        }
+
+
+    }
+
+    private boolean checkFields() {
+        boolean entryFlag = true;
+        if (txtItemName.getText().equals("")) {
+            txtItemName.setUnFocusColor(Color.web("red"));
+            entryFlag = false;
+        }
+
+        if (chkSale.isSelected() && txtPrice.getText().equals("")) {
+            txtPrice.setUnFocusColor(Color.web("red"));
+            entryFlag = false;
+        }
+
+        if (!chkRent.isSelected() && !chkSale.isSelected()) {
+            entryFlag = false;
+        }
+
+        if (chkRent.isSelected() && txtRentRate.getText().equals("")) {
+            txtRentRate.setUnFocusColor(Color.web("red"));
+            entryFlag = false;
+        }
+
+        if (txtType.getValue().equals("")) {
+            txtType.setUnFocusColor(Color.web("red"));
+            entryFlag = false;
+            ;
+        }
+
+        if (txtStock.getText().equals("")) {
+            txtStock.setUnFocusColor(Color.web("red"));
+            entryFlag = false;
+            ;
+        }
+
+        return entryFlag;
     }
 
     @FXML
     public void btnAddMode(ActionEvent event) {
-        if(addFlag){
+        if (addFlag) {
             // reset addFlag
 
             addFlag = false;
@@ -345,15 +425,15 @@ public class InventoryController implements Initializable {
             // Hiển thị chế độ.
             lblMode.setText("Item");
             reloadRecord();
-            
 
-        }else{
-            Connection connection = DBConnection.getConnection();
+
+        } else {
+            Connection connection = repository.DBConnection.getConnection();
             try {
                 PreparedStatement pr = connection.prepareStatement("SELECT MAX(itemID) FROM item ");
                 ResultSet rs = pr.executeQuery();
-                while(rs.next()){
-                    itemID.setText(Integer.valueOf(rs.getInt(1)+1).toString());
+                while (rs.next()) {
+                    itemID.setText(String.valueOf(Integer.valueOf(rs.getInt(1) + 1)));
                 }
                 addFlag = true;
                 btnAddIcon.setGlyphName("UNDO");
@@ -372,6 +452,13 @@ public class InventoryController implements Initializable {
                 btnDelete.setDisable(true);
                 btnSearch.setDisable(true);
 
+                //Xóa các trường trong Item Pane
+                txtItemName.setText("");
+                txtType.setValue("");
+                txtRentRate.setText("");
+                txtPrice.setText("");
+                imgPath = null;
+                txtStock.setText("");
 
             } catch (SQLException e) {
                 new PromptDialogController("SQL Error!", "Error occured while executing Query.\nSQL Error Code: " + e.getErrorCode());
@@ -381,12 +468,12 @@ public class InventoryController implements Initializable {
 
     private void reloadRecord() {
         itemList.clear();
-        Connection connection = DBConnection.getConnection();
+        Connection connection = repository.DBConnection.getConnection();
         try {
             PreparedStatement pr = connection.prepareStatement("SELECT * FROM item INNER JOIN itemtype ON ItemType_itemTypeId = itemtype.itemTypeId GROUP BY itemID");
             ResultSet rs = pr.executeQuery();
 
-            while(rs.next()){
+            while (rs.next()) {
                 Item item = new Item(rs.getInt("itemId"),
                         rs.getString("itemName"),
                         rs.getInt("stock"),
@@ -404,6 +491,8 @@ public class InventoryController implements Initializable {
                 itemList.add(item);
             }
 
+            setView();
+
         } catch (SQLException e) {
             new PromptDialogController("SQL Error!", "Error occured while executing Query.\nSQL Error Code: " + e.getErrorCode());
         }
@@ -416,6 +505,90 @@ public class InventoryController implements Initializable {
 
     @FXML
     public void btnSaveAction(ActionEvent event) {
+        if (addFlag) {
+            boolean filedNotEmpty = checkFields();
+            if (filedNotEmpty) {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Xác nhận Empty");
+                alert.setGraphic(new ImageView(this.getClass().getResource("/resource/icon/question (2).png").toString()));
+
+                alert.setHeaderText("Bạn muộn thêm item này vào không ?");
+                alert.setContentText("Nhấn OK để xác nhận, Cancel để hủy");
+
+                java.util.Optional<ButtonType> resultl = alert.showAndWait();
+
+                if (resultl.get() == ButtonType.OK) {
+                    addRecodeToDatabase();
+                }
+
+
+            } else {
+                JFXSnackbar snackbar = new JFXSnackbar(itemPane);
+                snackbar.show("Điền đầy đủ thông tin", 3000);
+            }
+        } else {
+            boolean fieldNotEmpty = checkFields();
+            if (fieldNotEmpty) {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Xác nhận Edit");
+                alert.setGraphic(new ImageView(this.getClass().getResource("/resource/icon/question (2).png").toString()));
+
+                alert.setHeaderText("Bạn muốn cập nhật item này không ?");
+                alert.setContentText("Nhấn OK để xác nhận, Cancel để hủy");
+
+                java.util.Optional<ButtonType> resultl = alert.showAndWait();
+                if (resultl.get() == ButtonType.OK) {
+                    updateRecord();
+                }
+
+            }
+        }
+
+    }
+
+    private void updateRecord() {
+        Connection connection = repository.DBConnection.getConnection();
+        try {
+            PreparedStatement rs = connection.prepareStatement("UPDATE item SET itemID = ?, itemName = ?, stock = ?, rentalOrSale = ?," +
+                    "salePrice = ?, rentRate = ?, photo = ?, ItemType_itemTypeId =  ?  WHERE  ItemID =" + Integer.valueOf(itemID.getText()));
+            rs.setInt(1, Integer.valueOf(itemID.getText()));
+            rs.setInt(1, Integer.valueOf(itemID.getText()));
+            rs.setString(2, txtItemName.getText());
+            rs.setInt(3, Integer.valueOf(txtStock.getText()));
+
+            if (chkSale.isSelected() && chkRent.isSelected()) {
+                rs.setString(4, "Rental,Sale");
+            } else if (chkSale.isSelected()) {
+                rs.setString(4, "Sale");
+            } else if (chkRent.isSelected()) {
+                rs.setString(4, "Rental");
+            }
+
+            double salePrice = 0.0;
+            double rentRate = 0.0;
+
+            if (!txtPrice.getText().equals("")) {
+                salePrice = Double.valueOf(txtPrice.getText());
+            }
+
+            if (!txtRentRate.getText().equals("")) {
+                rentRate = Double.valueOf(txtRentRate.getText());
+            }
+            rs.setDouble(5, salePrice);
+            rs.setDouble(6, rentRate);
+
+            rs.setString(7, imgPath);
+            rs.setInt(8, itemType.get(txtType.getValue()));
+
+            rs.executeUpdate();
+
+            new PromptDialogController("Thành công", "Đã cập nhật item");
+            reloadRecord();
+
+
+        } catch (SQLException e) {
+            new exception.PromptDialogController("SQL Error!", "Error occured while executing Query.\nSQL Error Code: " + e.getErrorCode());
+        }
 
     }
 
