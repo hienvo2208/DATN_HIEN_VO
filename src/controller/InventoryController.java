@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 
-import static com.sun.xml.internal.ws.policy.sourcemodel.wspolicy.XmlToken.Optional;
 
 public class InventoryController implements Initializable {
     @FXML
@@ -312,7 +311,122 @@ public class InventoryController implements Initializable {
 
     @FXML
     public void btnSearchAction(ActionEvent event) {
+        if (searchDone) {
+            searchDone = false;
+            lblSearchResults.setVisible(true);
+            itemList = tempList;
+            recordSize = itemList.size();
+            btnSearch.setTooltip(new Tooltip("Tìm kiếm khách hàng với tên hoặc ID"));
+            btnSearchIcon.setGlyphName("SEARCH");
+            setView();
+        } else {
+            ObservableList<Item> searchResult = FXCollections.observableArrayList();
+            try {
+                Integer id = Integer.valueOf(txtSearch.getText());
+                searchResult = searchWithID(id);
+            } catch (NumberFormatException e) {
+                String searchName = String.valueOf(txtSearch.getText());
+                searchResult = searchNameWithString(searchName);
+            }finally {
+                if(searchResult.size() < 0){
+                    txtRentRate.setText("Không tìm thấy kết quả");
+                    txtRentRate.setVisible(true);
+                }else{
+                    searchDone = true;
+                    tempList = FXCollections.observableArrayList(itemList);
+                    btnSearchIcon.setGlyphName("CLOSE");
+                    btnSearch.setTooltip(new Tooltip("Reset Full List"));
+                    itemList = searchResult;
+                    recordSize = searchResult.size();
+                    lblSearchResults.setText("Có " + recordSize +" được tìm thấy.");
+                    lblSearchResults.setVisible(true);
+                    setView();
+                }
+            }
+        }
 
+    }
+
+    private ObservableList<Item> searchNameWithString(String searchName) {
+        Connection connection = DBConnection.getConnection();
+        String seNaSQl = "SELECT * FROM item, itemtype WHERE itemName LIKE ?  AND itemTypeId = ItemType_itemTypeId";
+        ObservableList<Item> searchList = FXCollections.observableArrayList();
+
+
+        try {
+            PreparedStatement pr = connection.prepareStatement(seNaSQl);
+            pr.setString(1, "%"+searchName+"%");
+
+            ResultSet rs = pr.executeQuery();
+            while (rs.next()){
+                Item item = new Item(
+                        rs.getInt(1),
+                        rs.getString(2),
+                        rs.getInt(3),
+                        false,
+                        false,
+                        rs.getDouble(5),
+                        rs.getDouble(6),
+                        rs.getString(7),
+                        rs.getString(8)
+                );
+
+                if (rs.getString("rentalOrSale").contains("Rental")) {
+                    item.setRent(true);
+                }
+                if (rs.getString("rentalOrSale").contains("Sale")) {
+                    item.setSale(true);
+                }
+
+                searchList.add(item);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+       return searchList;
+    }
+
+    private ObservableList<Item> searchWithID(Integer id) {
+        Connection connection = DBConnection.getConnection();
+
+        String idSQL = "SELECT * FROM item, itemtype WHERE itemID = ? AND itemTypeId = ItemType_itemTypeId";
+        ObservableList<Item> searchResult = FXCollections.observableArrayList();
+
+        try {
+            PreparedStatement ps = connection.prepareStatement(idSQL);
+            ps.setInt(1, id);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Item item = new Item(
+                        rs.getInt(1),
+                        rs.getString(2),
+                        rs.getInt(3),
+                        false,
+                        false,
+                        rs.getDouble(5),
+                        rs.getDouble(6),
+                        rs.getString(7),
+                        rs.getString(8)
+                );
+
+                if (rs.getString("rentalOrSale").contains("Rental")) {
+                    item.setRent(true);
+                }
+                if (rs.getString("rentalOrSale").contains("Sale")) {
+                    item.setSale(true);
+                }
+                searchResult.add(item);
+            }
+            connection.close();
+
+        } catch (SQLException e) {
+            new PromptDialogController("SQL Error!",
+                    "Error occured while executing Query.\nSQL Error Code: " + e.getErrorCode());
+        }
+
+        return searchResult;
     }
 
     private void addRecodeToDatabase() {

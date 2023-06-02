@@ -166,7 +166,7 @@
                   <Font size="24.0" />
                </font>
             </Label>
-            <JFXTextField fx:id="txtSearch" alignment="CENTER" focusColor="#263238" layoutX="788.0" layoutY="35.0" prefHeight="25.0" prefWidth="195.0" promptText="search with item id/name">
+            <JFXTextField fx:id="txtSearch" alignment="CENTER" focusColor="#263238" layoutX="788.0" layoutY="35.0" prefHeight="25.0" prefWidth="195.0" promptText="Tìm kiêm item với id/tên">
                <font>
                   <Font size="15.0" />
                </font>

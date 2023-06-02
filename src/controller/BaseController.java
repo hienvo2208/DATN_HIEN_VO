@@ -113,9 +113,9 @@ public class BaseController implements Initializable {
     private void loadFXMLMap() {
         FXML_URL.put("Dashboard", "/resource/view/dashboard.fxml");
         FXML_URL.put("Items", "/resource/view/inventory.fxml");
+        FXML_URL.put("Customers", "/resource/view/customer.fxml");
 
     }
-
 
 
     @FXML
@@ -146,7 +146,6 @@ public class BaseController implements Initializable {
         }
         btn.setStyle("-fx-background-color: #455A64");
     }
-
 
     @FXML
     public void btnNavigators(ActionEvent event) {
