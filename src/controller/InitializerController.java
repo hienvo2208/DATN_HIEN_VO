@@ -179,8 +179,7 @@ public class InitializerController implements Initializable {
             }
 
             //Setting fields in Customers List
-//            CustomerController.customersList = customersList;
-//            CustomerController.customerNames = customerName;
+            CustomerController.customersList = customersList;
 
 
             //Setting Id and Name to SellsController, RentalsController, Accounts

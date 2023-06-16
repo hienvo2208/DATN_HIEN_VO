@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="DATN-HIENVO:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/DATN_HIENVO_jar</output-path>
+    <root id="archive" name="DATN-HIENVO.jar">
+      <element id="module-output" name="DATN-HIENVO" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/jar/InventorySystem.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
